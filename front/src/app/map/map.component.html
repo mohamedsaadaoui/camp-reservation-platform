@@ -1,0 +1,195 @@
+<div class="map-container">
+  <!-- Carte -->
+  <div id="map" style="height: 800px;"></div>
+
+  <!-- Panel des détails de l'emplacement -->
+  <div *ngIf="showDetailsPanel && selectedEmplacement" class="details-panel">
+    <div class="panel-header">
+      <h2>{{ selectedEmplacement.nom }}</h2>
+      <button class="close-btn" (click)="fermerDetails()">×</button>
+    </div>
+    
+    <div class="panel-content">
+      <!-- Image et informations de base -->
+      <div class="emplacement-image">
+        <img [src]="selectedEmplacement.imageUrl || 'https://via.placeholder.com/400x300'" 
+             [alt]="selectedEmplacement.nom">
+      </div>
+      
+      <div class="basic-info">
+        <p><strong>Description:</strong> {{ selectedEmplacement.description }}</p>
+        <p><strong>Type:</strong> {{ selectedEmplacement.type }}</p>
+        <p><strong>Prix:</strong> {{ selectedEmplacement.prix }} TND/nuit</p>
+        <p><strong>Capacité:</strong> {{ selectedEmplacement.capacite }} personnes</p>
+        <p><strong>Superficie:</strong> {{ selectedEmplacement.superficie }} m²</p>
+        <p><strong>Disponible:</strong> 
+          <span [class]="selectedEmplacement.disponible ? 'available' : 'unavailable'">
+            {{ selectedEmplacement.disponible ? '✅ Oui' : '❌ Non' }}
+          </span>
+        </p>
+      </div>
+
+      <!-- Équipements -->
+      <div class="equipements-section">
+        <h3>🏕️ Équipements</h3>
+        <div class="equipements-list">
+          <span *ngFor="let equipement of selectedEmplacement.equipements" 
+                class="equipement-tag">
+            {{ equipement }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Statistiques -->
+      <div *ngIf="statistiques" class="statistics-section">
+        <h3>📈 Statistiques</h3>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <span class="stat-value">{{ statistiques.nombreReservations }}</span>
+            <span class="stat-label">Réservations</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">{{ statistiques.chiffreAffaire }} TND</span>
+            <span class="stat-label">Chiffre d'affaires</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">{{ statistiques.tauxOccupation }}%</span>
+            <span class="stat-label">Taux d'occupation</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">{{ statistiques.avisMoyen }}/5</span>
+            <span class="stat-label">Note moyenne</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Avis -->
+      <div *ngIf="avis.length > 0" class="reviews-section">
+        <h3>⭐ Avis ({{ avis.length }})</h3>
+        <div *ngFor="let avisItem of avis" class="review-item">
+          <div class="review-header">
+            <span class="client-name">{{ avisItem.clientNom }}</span>
+            <span class="review-rating">{{ getStars(avisItem.note) }}</span>
+            <span class="review-date">{{ avisItem.date | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <p class="review-comment">{{ avisItem.commentaire }}</p>
+        </div>
+      </div>
+
+      <!-- Bouton de réservation -->
+      <div class="action-buttons">
+        <button class="reserve-btn-large" (click)="preparerReservation(selectedEmplacement)">
+          📅 Réserver cet emplacement
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulaire de réservation moderne -->
+  <div *ngIf="showReservationForm && selectedEmplacement" class="reservation-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Réserver {{ selectedEmplacement.nom }}</h2>
+        <button class="close-btn" (click)="fermerReservation()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="reservation-summary">
+          <img [src]="selectedEmplacement.imageUrl || 'https://via.placeholder.com/150x100'" 
+               [alt]="selectedEmplacement.nom">
+          <div class="summary-details">
+            <h4>{{ selectedEmplacement.nom }}</h4>
+            <p>{{ selectedEmplacement.type }} • {{ selectedEmplacement.capacite }} personnes</p>
+            <p class="price">{{ selectedEmplacement.prix }} TND/nuit</p>
+          </div>
+        </div>
+
+        <form class="reservation-form">
+          <!-- Informations personnelles -->
+          <div class="form-section">
+            <h3>Informations personnelles</h3>
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Nom complet *</mat-label>
+                <input matInput [(ngModel)]="reservation.clientNom" name="clientNom" required>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Email *</mat-label>
+                <input matInput [(ngModel)]="reservation.clientEmail" name="clientEmail" type="email" required>
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Téléphone *</mat-label>
+                <input matInput [(ngModel)]="reservation.clientTelephone" name="clientTelephone" required>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Nombre de personnes</mat-label>
+                <input matInput [(ngModel)]="reservation.nombrePersonnes" name="nombrePersonnes" type="number" min="1" [max]="selectedEmplacement.capacite">
+              </mat-form-field>
+            </div>
+          </div>
+
+          <!-- Dates de réservation -->
+          <div class="form-section">
+            <h3>Dates de séjour</h3>
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Date d'arrivée *</mat-label>
+                <input matInput [(ngModel)]="reservation.dateDebut" name="dateDebut" type="date" (change)="onDatesChange()" required>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Date de départ *</mat-label>
+                <input matInput [(ngModel)]="reservation.dateFin" name="dateFin" type="date" (change)="onDatesChange()" required>
+              </mat-form-field>
+            </div>
+          </div>
+
+          <!-- Commentaires -->
+          <div class="form-section">
+            <h3>Commentaires supplémentaires</h3>
+            <mat-form-field appearance="outline" class="form-field-full">
+              <mat-label>Demandes spéciales</mat-label>
+              <textarea matInput [(ngModel)]="reservation.commentaires" name="commentaires" rows="3"></textarea>
+            </mat-form-field>
+          </div>
+
+          <!-- Résumé du prix -->
+          <div class="price-summary">
+            <h3>Résumé de la réservation</h3>
+            <div class="price-line">
+              <span>{{ selectedEmplacement.prix }} TND × 
+                {{ calculateNuits() }} nuit(s)</span>
+              <span>{{ reservation.prixTotal }} TND</span>
+            </div>
+            <div class="price-total">
+              <strong>Total: {{ reservation.prixTotal }} TND</strong>
+            </div>
+          </div>
+
+          <!-- Bouton de confirmation -->
+          <div class="form-actions">
+            <button type="button" class="btn-secondary" (click)="fermerReservation()">
+              Annuler
+            </button>
+            <button type="button" class="btn-primary" (click)="reserverEmplacement()"
+                    [disabled]="!reservation.clientNom || !reservation.clientEmail || !reservation.clientTelephone || !reservation.dateDebut || !reservation.dateFin">
+              Confirmer la réservation
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bouton flottant pour réserver -->
+  <button *ngIf="selectedEmplacement && !showReservationForm && !showDetailsPanel" 
+          (click)="preparerReservation(selectedEmplacement)"
+          class="floating-reserve-btn">
+    📅 Réserver {{ selectedEmplacement.nom }}
+  </button>
+</div>
