@@ -25,13 +25,4 @@ public interface ReservationServiceClient {
             @PathVariable("id") String id,
             @RequestBody UpdateStatusRequest request
     );
-
-    @GetMapping("/statistics/emplacement/{emplacementId}")
-    ReservationStatsDTO getReservationStats(@PathVariable("emplacementId") Long emplacementId);
-
-    @GetMapping("/period")
-    List<ReservationDTO> getReservationsByPeriod(
-            @RequestParam("startDate") String startDate,
-            @RequestParam("endDate") String endDate
-    );
 }

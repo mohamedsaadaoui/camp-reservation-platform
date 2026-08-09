@@ -1,14 +1,12 @@
 const mongoose = require('mongoose');
 
 const connectDB = async () => {
+  const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/camping';
   try {
-    await mongoose.connect('mongodb://localhost:27017/reservation_db', {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(mongoURI);
     console.log('MongoDB connected successfully');
   } catch (error) {
-    console.error('Database connection error:', error);
+    console.error('Database connection error:', error.message);
     process.exit(1);
   }
 };

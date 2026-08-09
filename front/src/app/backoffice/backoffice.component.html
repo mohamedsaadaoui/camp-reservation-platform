@@ -1,0 +1,117 @@
+<div class="backoffice-container">
+  <h2>🛠️ Backoffice — Gestion des emplacements</h2>
+
+  <div *ngIf="message" class="message" [class.error]="messageError">{{ message }}</div>
+
+  <div class="backoffice-grid">
+    <!-- Formulaire de création -->
+    <div class="form-card">
+      <h3>{{ editingId ? '✏️ Modifier l\'emplacement' : '➕ Nouvel emplacement' }}</h3>
+
+      <form (ngSubmit)="onSave()">
+        <div class="form-row">
+          <label>Nom *</label>
+          <input type="text" [(ngModel)]="form.nom" name="nom" required>
+        </div>
+
+        <div class="form-row two-cols">
+          <div>
+            <label>Numéro</label>
+            <input type="text" [(ngModel)]="form.numero" name="numero">
+          </div>
+          <div>
+            <label>Type *</label>
+            <select [(ngModel)]="form.type" name="type">
+              <option *ngFor="let t of types" [value]="t">{{ t }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row two-cols">
+          <div>
+            <label>Prix (TND/nuit) *</label>
+            <input type="number" [(ngModel)]="form.prix" name="prix" min="0" step="0.5" required>
+          </div>
+          <div>
+            <label>Capacité (personnes)</label>
+            <input type="number" [(ngModel)]="form.capacite" name="capacite" min="1">
+          </div>
+        </div>
+
+        <div class="form-row two-cols">
+          <div>
+            <label>Superficie (m²)</label>
+            <input type="number" [(ngModel)]="form.superficie" name="superficie" min="0">
+          </div>
+          <div class="checkbox-row">
+            <label>
+              <input type="checkbox" [(ngModel)]="form.disponible" name="disponible">
+              Disponible
+            </label>
+          </div>
+        </div>
+
+        <div class="form-row two-cols">
+          <div>
+            <label>Latitude</label>
+            <input type="number" step="0.0001" [(ngModel)]="form.latitude" name="latitude">
+          </div>
+          <div>
+            <label>Longitude</label>
+            <input type="number" step="0.0001" [(ngModel)]="form.longitude" name="longitude">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label>Équipements (séparés par des virgules)</label>
+          <input type="text" [(ngModel)]="form.equipements" name="equipements"
+                 placeholder="Eau, Électricité, WiFi, Barbecue...">
+        </div>
+
+        <div class="form-row">
+          <label>Description</label>
+          <textarea [(ngModel)]="form.description" name="description" rows="3"
+                    placeholder="Description détaillée de l'emplacement..."></textarea>
+        </div>
+
+        <div class="form-row">
+          <label>Image</label>
+          <input type="file" accept="image/*" (change)="onFileSelected($event)">
+        </div>
+
+        <button type="submit" class="btn-primary" [disabled]="loading">
+          {{ loading ? 'Enregistrement...' : (editingId ? '💾 Enregistrer les modifications' : '💾 Créer l\'emplacement') }}
+        </button>
+
+        <button *ngIf="editingId" type="button" class="btn-cancel" (click)="onCancelEdit()">
+          Annuler
+        </button>
+      </form>
+    </div>
+
+    <!-- Liste des emplacements -->
+    <div class="list-card">
+      <h3>📋 Emplacements existants ({{ emplacements.length }})</h3>
+
+      <div *ngIf="emplacements.length === 0" class="empty-state">
+        Aucun emplacement pour le moment.
+      </div>
+
+      <div class="emplacement-item" *ngFor="let emplacement of emplacements">
+        <img [src]="getImageUrl(emplacement)" [alt]="emplacement.nom">
+        <div class="emplacement-info">
+          <h4>{{ emplacement.nom }}</h4>
+          <p>{{ emplacement.type }} • {{ emplacement.prix }} TND/nuit • {{ emplacement.capacite }} pers.</p>
+          <p class="coordinates">📍 {{ emplacement.latitude.toFixed(4) }}, {{ emplacement.longitude.toFixed(4) }}</p>
+          <span class="badge" [class.unavailable]="!emplacement.disponible">
+            {{ emplacement.disponible ? 'Disponible' : 'Indisponible' }}
+          </span>
+        </div>
+        <div class="emplacement-actions">
+          <button class="btn-edit" (click)="onEdit(emplacement)">✏️</button>
+          <button class="btn-danger" (click)="onDelete(emplacement)">🗑️</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

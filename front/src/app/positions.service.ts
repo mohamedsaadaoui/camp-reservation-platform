@@ -1,10 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../environments/environment';
 
 export interface Emplacement {
   id: number;
   nom: string;
+  numero?: string;
   type: string;
   prix: number;
   disponible: boolean;
@@ -38,42 +40,6 @@ export interface StatistiquesEmplacement {
   avisMoyen: number;
   nombreAvis: number;
 }
-export class FileUploadService {
-  private apiUrl = 'http://localhost:8061/api/upload';
-
-  constructor(private http: HttpClient) { }
-
-  uploadImage(file: File): Observable<string> {
-    const formData = new FormData();
-    formData.append('file', file);
-    return this.http.post<string>(`${this.apiUrl}/image`, formData);
-  }}
-
-
-export class  ImageService {
-  
-  private baseUrl = 'http://localhost:8061';
-
-  getImageUrl(imagePath: string): string {
-    if (!imagePath) {
-      return 'https://via.placeholder.com/400x300?text=Plage+Tunisie';
-    }
-    
-    // Si c'est déjà une URL complète
-    if (imagePath.startsWith('http')) {
-      return imagePath;
-    }
-    
-    // Si c'est un chemin relatif, ajouter le baseUrl
-    // Note: Spring Boot sert les fichiers statiques depuis le dossier images
-    return `${this.baseUrl}${imagePath}`;
-  }
-
-  // Méthode pour obtenir l'URL complète d'un emplacement
-  getEmplacementImageUrl(emplacement: any): string {
-    return this.getImageUrl(emplacement.imageUrl);
-  }
-}
 
 export interface Avis {
   id: number;
@@ -87,55 +53,87 @@ export interface Avis {
   providedIn: 'root'
 })
 export class PositionsService {
-  
-  private apiBaseUrl = 'http://localhost:8061/api';
+
+  private apiBaseUrl = environment.emplacementApiUrl;
 
   constructor(private http: HttpClient) {}
 
-  // Récupérer tous les emplacements
   getPositions(): Observable<Emplacement[]> {
-    return this.http.get<Emplacement[]>(`${this.apiBaseUrl}/emplacements`);
+    return this.http.get<Emplacement[]>(this.apiBaseUrl);
   }
 
-  // Récupérer un emplacement spécifique
   getEmplacement(id: number): Observable<Emplacement> {
-    return this.http.get<Emplacement>(`${this.apiBaseUrl}/emplacements/${id}`);
+    return this.http.get<Emplacement>(`${this.apiBaseUrl}/${id}`);
   }
 
-  // Créer une réservation
+  createEmplacement(data: Partial<Emplacement>): Observable<Emplacement> {
+    return this.http.post<Emplacement>(this.apiBaseUrl, data);
+  }
+
+  updateEmplacement(id: number, data: Partial<Emplacement>): Observable<Emplacement> {
+    return this.http.put<Emplacement>(`${this.apiBaseUrl}/${id}`, data);
+  }
+
+  deleteEmplacement(id: number): Observable<any> {
+    return this.http.delete(`${this.apiBaseUrl}/${id}`);
+  }
+
+  uploadImage(id: number, file: File): Observable<string> {
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+    return this.http.post(`${this.apiBaseUrl}/${id}/upload-image`, formData, { responseType: 'text' });
+  }
+
   createReservation(reservation: Reservation): Observable<any> {
-    return this.http.post(`${this.apiBaseUrl}/emplacements/reserver`, reservation);
+    return this.http.post(`${this.apiBaseUrl}/reserver`, reservation);
   }
 
-  // Récupérer les réservations d'un emplacement
   getReservationsByEmplacement(emplacementId: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiBaseUrl}/reservations/emplacement/${emplacementId}`);
+    return this.http.get<any[]>(`${environment.reservationApiUrl}/emplacement/${emplacementId}`);
   }
 
-  // Récupérer les statistiques d'un emplacement
   getStatistiquesEmplacement(id: number): Observable<StatistiquesEmplacement> {
-    return this.http.get<StatistiquesEmplacement>(`${this.apiBaseUrl}/emplacements/${id}/statistiques`);
+    return this.http.get<StatistiquesEmplacement>(`${this.apiBaseUrl}/${id}/statistiques`);
   }
 
-  // Vérifier la disponibilité
   verifierDisponibilite(emplacementId: number, dateDebut: string, dateFin: string): Observable<boolean> {
     return this.http.get<boolean>(
-      `${this.apiBaseUrl}/emplacements/${emplacementId}/disponible?dateDebut=${dateDebut}&dateFin=${dateFin}`
+      `${environment.reservationApiUrl}/emplacement/${emplacementId}/disponible?dateDebut=${dateDebut}&dateFin=${dateFin}`
     );
   }
 
-  // Récupérer les avis d'un emplacement
   getAvisEmplacement(emplacementId: number): Observable<Avis[]> {
-    return this.http.get<Avis[]>(`${this.apiBaseUrl}/emplacements/${emplacementId}/avis`);
+    return this.http.get<Avis[]>(`${this.apiBaseUrl}/${emplacementId}/avis`);
   }
 
-  // Calculer le prix avec conversion en dinar
   calculerPrixTotal(prixParNuit: number, dateDebut: string, dateFin: string): number {
     const start = new Date(dateDebut);
     const end = new Date(dateFin);
     const nights = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
     return prixParNuit * nights;
   }
+}
 
-  
+@Injectable({
+  providedIn: 'root'
+})
+export class ImageService {
+
+  private baseUrl = '';
+
+  getImageUrl(imagePath: string | undefined): string {
+    if (!imagePath) {
+      return 'https://via.placeholder.com/400x300?text=Plage+Tunisie';
+    }
+
+    if (imagePath.startsWith('http')) {
+      return imagePath;
+    }
+
+    return `${this.baseUrl}${imagePath}`;
+  }
+
+  getEmplacementImageUrl(emplacement: Emplacement): string {
+    return this.getImageUrl(emplacement.imageUrl);
+  }
 }

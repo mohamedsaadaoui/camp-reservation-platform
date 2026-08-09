@@ -1,15 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const reservationController = require('../controllers/reservationController');
+const { requireAdmin } = require('../middleware/auth');
+const { validate, createReservationSchema, updateStatusSchema } = require('../middleware/validate');
 
-// Routes CRUD
-router.post('/', reservationController.createReservation);
+router.post('/', validate(createReservationSchema), reservationController.createReservation);
 router.get('/', reservationController.getReservations);
+router.get('/emplacement/:emplacementId/disponible', reservationController.checkAvailability);
+router.get('/emplacement/:emplacementId', reservationController.getReservationsByEmplacement);
 router.get('/:id', reservationController.getReservationById);
-router.put('/:id', reservationController.updateReservation);
-router.delete('/:id', reservationController.deleteReservation);
-
-// Routes spécifiques
-router.get('/client/:clientId', reservationController.getReservationsByClient);
+router.put('/:id/status', requireAdmin, validate(updateStatusSchema), reservationController.updateReservationStatus);
+router.delete('/:id', requireAdmin, reservationController.deleteReservation);
 
 module.exports = router;

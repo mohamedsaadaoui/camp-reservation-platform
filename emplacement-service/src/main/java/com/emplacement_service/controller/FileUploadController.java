@@ -1,13 +1,13 @@
 package com.emplacement_service.controller;
 
 
-import com.emplacement_service.EmplacementServiceApplication;
 import com.emplacement_service.entities.Emplacement;
 import com.emplacement_service.service.EmplacementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,7 +31,11 @@ public class FileUploadController {
     private String uploadDir;
 
     @PostMapping("/image")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            return ResponseEntity.badRequest().body("Fichier vide");
+        }
         try {
             // Créer le répertoire s'il n'existe pas
             Path uploadPath = Paths.get(uploadDir);

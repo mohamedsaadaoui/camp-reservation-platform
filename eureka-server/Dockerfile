@@ -1,15 +1,16 @@
-FROM openjdk:17-alpine
+FROM maven:3.9-eclipse-temurin-17 AS build
+WORKDIR /build
+COPY pom.xml .
+RUN mvn -q -B dependency:resolve
+COPY src src
+RUN mvn -q -B -DskipTests package
 
-RUN apk update && apk add --no-cache curl
-RUN addgroup -S spring && adduser -S spring -G spring
-USER spring:spring
-
-VOLUME /tmp
-
-ARG JAR_FILE=target/*.jar
-COPY ${JAR_FILE} app.jar
-
+FROM eclipse-temurin:17-jre-alpine
+RUN addgroup -S app && adduser -S app -G app
+USER app:app
+WORKDIR /app
+COPY --from=build /build/target/*.jar app.jar
+EXPOSE 8761
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=5 \
-    CMD curl -f http://localhost:8761/ || exit 1
-
+    CMD wget -qO- http://localhost:8761/actuator/health || exit 1
 ENTRYPOINT ["java", "-jar", "app.jar"]

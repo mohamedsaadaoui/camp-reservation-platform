@@ -1,10 +1,15 @@
 package camping.campbackoffice.controller;
 
-import camping.campbackoffice.dtos.*;
+import camping.campbackoffice.dtos.DashboardStatsDTO;
+import camping.campbackoffice.dtos.EmplacementDTO;
+import camping.campbackoffice.dtos.EmplacementStatsDTO;
+import camping.campbackoffice.dtos.ReservationDTO;
+import camping.campbackoffice.dtos.ReservationDetailsDTO;
+import camping.campbackoffice.dtos.RevenueStatsDTO;
+import camping.campbackoffice.dtos.UpdateStatusRequest;
 import camping.campbackoffice.feign.EmplacementServiceClient;
+import camping.campbackoffice.feign.ReservationServiceClient;
 import camping.campbackoffice.service.BackofficeStatisticsService;
-import com.emplacement_service.feign.ReservationServiceClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -20,14 +25,17 @@ import java.util.stream.Collectors;
 @PreAuthorize("hasRole('ADMIN')")
 public class BackofficeController {
 
-    @Autowired
-    private EmplacementServiceClient emplacementClient;
+    private final EmplacementServiceClient emplacementClient;
+    private final ReservationServiceClient reservationClient;
+    private final BackofficeStatisticsService statisticsService;
 
-    @Autowired
-    private ReservationServiceClient reservationClient;
-
-    @Autowired
-    private BackofficeStatisticsService statisticsService;
+    public BackofficeController(EmplacementServiceClient emplacementClient,
+                                ReservationServiceClient reservationClient,
+                                BackofficeStatisticsService statisticsService) {
+        this.emplacementClient = emplacementClient;
+        this.reservationClient = reservationClient;
+        this.statisticsService = statisticsService;
+    }
 
     // === DASHBOARD ===
     @GetMapping("/dashboard/stats")
@@ -115,11 +123,6 @@ public class BackofficeController {
             @RequestParam String period) { // daily, weekly, monthly
 
         return ResponseEntity.ok(statisticsService.getRevenueStats(period));
-    }
-
-    @GetMapping("/statistics/occupancy")
-    public ResponseEntity<OccupancyStatsDTO> getOccupancyStatistics() {
-        return ResponseEntity.ok(statisticsService.getOccupancyStats());
     }
 
     @GetMapping("/emplacements/{id}/statistics")

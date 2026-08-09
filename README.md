@@ -1,44 +1,65 @@
-🏕 Camping Reservation Platform
+# Camping Reservation Platform
 
-This is a microservices-based camping reservation application built with Spring Boot and a front-end module. It allows users to browse campsites, check availability, make reservations, and manage the camping services.
+Microservices-based camping reservation application: users can browse campsites on a map, check availability, and make reservations, while admins manage campsites and reservations through a dedicated back-office API.
 
-Project Modules
-1️⃣ campbackoffice
+## Modules
 
-Type: Backend (Admin/Management)
+| Module | Type | Technology |
+| ------ | ---- | ---------- |
+| `eureka-server` | Service discovery | Spring Cloud Netflix Eureka |
+| `emplacement-service` | Campsite management | Spring Boot, JPA, MySQL |
+| `reservation-service` | Reservation management | Node.js, Express, MongoDB |
+| `campbackoffice` | Admin aggregation/reporting | Spring Boot, OpenFeign |
+| `front` | Web application | Angular |
 
-Description: Manages campsite data, user accounts, and reservation management for the camping platform.
+## Architecture
 
-Technology: Spring Boot, JPA, MySQL
+- `eureka-server` registers all microservices.
+- `emplacement-service` exposes campsite CRUD and image upload; it also aggregates reservation data from `reservation-service` via OpenFeign.
+- `reservation-service` handles booking logic: Joi validation, double-booking prevention (exclusive date boundaries), and status management (`EN_ATTENTE`, `CONFIRMEE`, `ANNULEE`).
+- `campbackoffice` is a stateless API gateway for the admin UI, aggregating data from the other services. All `/api/admin` endpoints require an `ADMIN` JWT.
+- `front` is the Angular SPA. In production nginx proxies `/api` and `/uploads` to the backing services.
 
-2️⃣ emplacement-service
+## Authentication
 
-Type: Backend (Emplacement Management)
+JWT-based, shared secret across services (`JWT_SECRET` environment variable). Login via `POST /api/auth/login` on `emplacement-service`.
 
-Description: Handles campsite locations, availability, and details of each emplacement.
+- Public: browse campsites, check availability, create reservations.
+- Admin: create/update/delete campsites, upload images, update reservation statuses. The default admin account is created on startup from `ADMIN_USERNAME` / `ADMIN_PASSWORD` (defaults: `admin` / `admin123`).
 
-Technology: Spring Boot, REST API, MySQL
+## Local development
 
-3️⃣ reservation-service
+Prerequisites: Java 17+, Maven (`mvnw`), Node 16/18, MySQL, MongoDB.
 
-Type: Backend (Reservation Management)
+1. Start MySQL and MongoDB, then run each service:
 
-Description: Handles reservations, booking logic, and payment tracking.
+```bash
+cd eureka-server && mvnw spring-boot:run
+cd emplacement-service && mvnw spring-boot:run
+cd reservation-service && npm install && npm start
+cd campbackoffice && mvnw spring-boot:run
+cd front && npm install && npm start   # http://localhost:4200
+```
 
-Technology: Spring Boot, REST API, MySQL
+2. Default ports: Eureka `8761`, emplacement `8061`, reservation `8082`, campbackoffice `8063`, front `4200`.
 
-4️⃣ eureka-server
+The Angular dev server proxies `/api` to the services via `src/proxy.conf.json`.
 
-Type: Service Discovery
+## Docker
 
-Description: Registers all microservices and enables discovery and load balancing between them.
+```bash
+docker compose up --build
+```
 
-Technology: Spring Cloud Netflix Eureka
+- MySQL (port 3306) and MongoDB (port 27017) with persisted volumes.
+- Eureka: http://localhost:8761
+- Front: http://localhost:4200
+- Campsite API: http://localhost:8061
+- Reservation API: http://localhost:8082
+- Admin API: http://localhost:8063
 
-5️⃣ front
+Configuration is provided through environment variables (see `docker-compose.yml`). Override secrets with:
 
-Type: Front-end Application
-
-Description: User interface for campers to browse campsites, make reservations, and view availability.
-
-Technology: Angular 
+```bash
+JWT_SECRET=<strong-secret> ADMIN_PASSWORD=<admin-password> docker compose up --build
+```

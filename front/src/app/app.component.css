@@ -1,77 +1,46 @@
-.chat-container {
-    position: fixed;
-    bottom: 0;
-    right: 20px;
-    width: 400px;
-    background-color: #fff;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    max-height: 500px; /* Adjust the max height based on your preference */
-    transition: max-height 0.3s; /* Smooth transition when the container expands */
-    overflow-y: auto;
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #2c3e50;
+  color: white;
+  padding: 0 24px;
+  height: 60px;
+}
 
-  }
-  .message-container {
-    max-height: 200px; /* Set the initial max height for the container */
-  overflow-y: auto; /* Add scrollbar when needed */
-  padding: 10px;
-  transition: all 0.3s; /* Add a smooth transition */
+.app-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
 
+.app-title h1 {
+  font-size: 20px;
+  margin: 0;
+}
 
-  
-  } 
-  
-  .message-container-expanded {
-    max-height: 80vh; /* Define the expanded height as needed */
-  }
-  
-  .message-container-collapsed {
-    max-height: 0;
-    overflow: hidden;
-  }
-  
+.app-nav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
 
-  
+.app-nav a {
+  color: white;
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+}
 
-  
-  .message {
-    background-color: #eceff1;
-    border-radius: 5px;
-    padding: 10px;
-    margin: 5px 0;
-  }
-  
-  .message-sender {
-    font-weight: bold;
-  }
-  
-  .message-image {
-    max-width: 100px;
-    max-height: 100px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  }
-  
-  input {
-    flex: 1;
-    padding: 10px;
-    border: none;
-    border-radius: 0;
-    border-bottom: 1px solid #ccc;
-  }
-  
-  button {
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    border-radius: 0;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  button:hover {
-    background-color: #0056b3;
-  }
-  
+.app-nav a.active {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.app-nav a.logout-link {
+  cursor: pointer;
+}
+
+.app-nav a:hover {
+  background: rgba(255, 255, 255, 0.15);
+}

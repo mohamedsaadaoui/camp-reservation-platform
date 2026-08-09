@@ -6,13 +6,21 @@ import com.emplacement_service.feign.ReservationServiceClient;
 import com.emplacement_service.repo.EmplacementRepository;
 import feign.FeignException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/emplacements")
@@ -25,9 +33,19 @@ public class EmplacementController {
     @Autowired
     private ReservationServiceClient reservationClient;
 
+    @Value("${upload.dir}")
+    private String uploadDir;
+
     @GetMapping
     public List<Emplacement> getAllEmplacements() {
         return emplacementRepository.findAll();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Emplacement> getEmplacementById(@PathVariable Long id) {
+        return emplacementRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @GetMapping("/disponibles")
@@ -36,8 +54,66 @@ public class EmplacementController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public Emplacement createEmplacement(@RequestBody Emplacement emplacement) {
         return emplacementRepository.save(emplacement);
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> updateEmplacement(@PathVariable Long id, @RequestBody Emplacement details) {
+        Optional<Emplacement> existingOpt = emplacementRepository.findById(id);
+        if (existingOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Emplacement existing = existingOpt.get();
+        existing.setNom(details.getNom());
+        existing.setNumero(details.getNumero());
+        existing.setType(details.getType());
+        existing.setPrix(details.getPrix());
+        existing.setDisponible(details.isDisponible());
+        existing.setLatitude(details.getLatitude());
+        existing.setLongitude(details.getLongitude());
+        existing.setDescription(details.getDescription());
+        existing.setCapacite(details.getCapacite());
+        existing.setSuperficie(details.getSuperficie());
+        existing.setEquipements(details.getEquipements());
+        return ResponseEntity.ok(emplacementRepository.save(existing));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> deleteEmplacement(@PathVariable Long id) {
+        if (!emplacementRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        emplacementRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/upload-image")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> uploadImage(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        Optional<Emplacement> emplacementOpt = emplacementRepository.findById(id);
+        if (emplacementOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        if (file == null || file.isEmpty()) {
+            return ResponseEntity.badRequest().body("Fichier vide");
+        }
+        try {
+            Path uploadPath = Paths.get(uploadDir);
+            Files.createDirectories(uploadPath);
+            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            Files.copy(file.getInputStream(), uploadPath.resolve(fileName));
+
+            Emplacement emplacement = emplacementOpt.get();
+            emplacement.setImageUrl("/uploads/" + fileName);
+            emplacementRepository.save(emplacement);
+            return ResponseEntity.ok(emplacement.getImageUrl());
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().body("Erreur lors de l'upload de l'image");
+        }
     }
 
     @PostMapping("/reserver")

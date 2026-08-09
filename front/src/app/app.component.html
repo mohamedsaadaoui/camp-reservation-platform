@@ -1,5 +1,13 @@
-<app-chat></app-chat>
+<header class="app-header">
+  <div class="app-title" (click)="goHome()">
+    <span class="logo">🏕️</span>
+    <h1>Camping Tunisie</h1>
+  </div>
+  <nav class="app-nav">
+    <a routerLink="/map" routerLinkActive="active">Carte</a>
+    <a *ngIf="authService.isAuthenticated && authService.role === 'ADMIN'" routerLink="/backoffice" routerLinkActive="active">Backoffice</a>
+    <a *ngIf="!authService.isAuthenticated" routerLink="/login">Connexion</a>
+    <a *ngIf="authService.isAuthenticated" (click)="onLogout()" class="logout-link">Déconnexion</a>
+  </nav>
+</header>
 <router-outlet></router-outlet>
-
-
-

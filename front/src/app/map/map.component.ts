@@ -1,6 +1,6 @@
 import { Component, OnInit, Renderer2 } from '@angular/core';
 import { Map, tileLayer, Marker, icon } from 'leaflet';
-import { PositionsService, Emplacement, Reservation, StatistiquesEmplacement, Avis } from '../positions.service';
+import { PositionsService, ImageService, Emplacement, Reservation, StatistiquesEmplacement, Avis } from '../positions.service';
 
 @Component({
   selector: 'app-map',
@@ -30,7 +30,9 @@ export class MapComponent implements OnInit {
     commentaires: ''
   };
 
-  constructor(private positionsService: PositionsService, private renderer: Renderer2) {}
+  constructor(private positionsService: PositionsService,
+              private imageService: ImageService,
+              private renderer: Renderer2) {}
 
   ngOnInit() {
     this.initMap();
@@ -105,8 +107,9 @@ export class MapComponent implements OnInit {
 
       const popupContent = `
         <div style="min-width: 250px; text-align:center;">
-<img [src]="'http://localhost:8061/api/emplacements/' + selectedEmplacement.id + '/image'" 
-               style="width:100%; height:150px; object-fit:cover; border-radius:8px; margin-bottom:10px;">
+          <img src="${this.imageService.getEmplacementImageUrl(emplacement)}"
+               style="width:100%; height:150px; object-fit:cover; border-radius:8px; margin-bottom:10px;"
+               alt="${emplacement.nom}">
           <h4 style="margin:10px 0; color:#2c3e50;">${emplacement.nom}</h4>
           <p><strong>Type:</strong> ${emplacement.type}</p>
           <p><strong>Prix:</strong> ${emplacement.prix} TND/nuit</p>
@@ -163,8 +166,16 @@ export class MapComponent implements OnInit {
     
     // Charger les statistiques
     this.positionsService.getStatistiquesEmplacement(emplacement.id).subscribe({
-      next: (stats) => {
-        this.statistiques = stats;
+      next: (stats: any) => {
+        this.statistiques = {
+          emplacement,
+          nombreReservations: stats.nombreReservationsTotal ?? 0,
+          chiffreAffaire: stats.chiffreAffaireTotal ?? 0,
+          tauxOccupation: stats.tauxOccupation ?? 0,
+          moyenneDuree: 0,
+          avisMoyen: 0,
+          nombreAvis: 0
+        };
       },
       error: (error) => {
         console.error('Erreur lors du chargement des statistiques:', error);
@@ -220,7 +231,7 @@ export class MapComponent implements OnInit {
       },
       error: (error) => {
         console.error('Erreur vérification disponibilité:', error);
-        this.confirmerReservation(); // Poursuivre malgré l'erreur
+        alert('❌ Impossible de vérifier la disponibilité. Réessayez plus tard.');
       }
     });
   }

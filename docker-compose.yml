@@ -1,0 +1,124 @@
+services:
+
+  mysql:
+    image: mysql:8.4
+    container_name: camp-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${DB_NAME:-camp_emplacement_db}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD:-root}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  mongodb:
+    image: mongo:7
+    container_name: camp-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  eureka-server:
+    build: ./eureka-server
+    container_name: camp-eureka
+    restart: unless-stopped
+    ports:
+      - "8761:8761"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8761/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  emplacement-service:
+    build: ./emplacement-service
+    container_name: camp-emplacement
+    restart: unless-stopped
+    ports:
+      - "8061:8061"
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-camp_emplacement_db}
+      DB_USERNAME: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      EUREKA_URI: http://eureka-server:8761/eureka
+      JWT_SECRET: ${JWT_SECRET:-camp-reservation-platform-jwt-secret-key-change-me-0123456789abcdef}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+      UPLOAD_DIR: /app/uploads
+    volumes:
+      - emplacement-uploads:/app/uploads
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+
+  reservation-service:
+    build: ./reservation-service
+    container_name: camp-reservation
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+    environment:
+      PORT: 8082
+      MONGO_URI: mongodb://mongodb:27017/camping
+      JWT_SECRET: ${JWT_SECRET:-camp-reservation-platform-jwt-secret-key-change-me-0123456789abcdef}
+      EUREKA_ENABLED: "true"
+      EUREKA_HOST: eureka-server
+      EUREKA_PORT: 8761
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+
+  campbackoffice:
+    build: ./campbackoffice
+    container_name: camp-backoffice
+    restart: unless-stopped
+    ports:
+      - "8063:8063"
+    environment:
+      EUREKA_URI: http://eureka-server:8761/eureka
+      JWT_SECRET: ${JWT_SECRET:-camp-reservation-platform-jwt-secret-key-change-me-0123456789abcdef}
+    depends_on:
+      eureka-server:
+        condition: service_started
+      emplacement-service:
+        condition: service_started
+      reservation-service:
+        condition: service_started
+
+  front:
+    build: ./front
+    container_name: camp-front
+    restart: unless-stopped
+    ports:
+      - "4200:80"
+    depends_on:
+      - emplacement-service
+      - reservation-service
+      - campbackoffice
+
+volumes:
+  mysql-data:
+  mongo-data:
+  emplacement-uploads:

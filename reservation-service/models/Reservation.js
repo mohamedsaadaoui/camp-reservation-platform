@@ -1,14 +1,25 @@
 const mongoose = require('mongoose');
 
 const reservationSchema = new mongoose.Schema({
-  clientId: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    ref: 'Client'
-  },
   emplacementId: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true
+    type: String,
+    required: true,
+    index: true
+  },
+  clientNom: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  clientEmail: {
+    type: String,
+    required: true,
+    trim: true,
+    lowercase: true
+  },
+  clientTelephone: {
+    type: String,
+    trim: true
   },
   dateDebut: {
     type: Date,
@@ -20,24 +31,25 @@ const reservationSchema = new mongoose.Schema({
   },
   nombrePersonnes: {
     type: Number,
-    required: true,
-    min: 1
-  },
-  statut: {
-    type: String,
-    enum: ['confirmée', 'en_attente', 'annulée'],
-    default: 'en_attente'
+    min: 1,
+    default: 1
   },
   prixTotal: {
     type: Number,
-    required: true
+    required: true,
+    min: 0
+  },
+  statut: {
+    type: String,
+    enum: ['EN_ATTENTE', 'CONFIRMEE', 'ANNULEE'],
+    default: 'EN_ATTENTE'
+  },
+  commentaires: {
+    type: String,
+    trim: true
   }
-}, {
-  timestamps: true
-});
+}, { timestamps: true });
 
-// Index pour optimiser les recherches
-reservationSchema.index({ clientId: 1, dateDebut: 1 });
 reservationSchema.index({ emplacementId: 1, dateDebut: 1, dateFin: 1 });
 
 module.exports = mongoose.model('Reservation', reservationSchema);
