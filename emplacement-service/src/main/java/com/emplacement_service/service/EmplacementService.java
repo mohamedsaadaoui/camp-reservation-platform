@@ -40,25 +40,31 @@ public class EmplacementService {
         emplacementRepository.deleteById(id);
     }
 
+    // Vérifier si un emplacement existe
+    public boolean existsById(Long id) {
+        return emplacementRepository.existsById(id);
+    }
+
     // Mettre à jour un emplacement
     public Emplacement updateEmplacement(Long id, Emplacement emplacementDetails) {
         Optional<Emplacement> optionalEmplacement = emplacementRepository.findById(id);
-        if (optionalEmplacement.isPresent()) {
-            Emplacement emplacement = optionalEmplacement.get();
-
-            // Mettre à jour tous les champs
-            emplacement.setNom(emplacementDetails.getNom());
-            emplacement.setNumero(emplacementDetails.getNumero());
-            emplacement.setType(emplacementDetails.getType());
-            emplacement.setPrix(emplacementDetails.getPrix());
-            emplacement.setDisponible(emplacementDetails.isDisponible());
-            emplacement.setLatitude(emplacementDetails.getLatitude());
-            emplacement.setLongitude(emplacementDetails.getLongitude());
-
-
-            return emplacementRepository.save(emplacement);
+        if (optionalEmplacement.isEmpty()) {
+            return null;
         }
-        return null;
+        Emplacement emplacement = optionalEmplacement.get();
+        emplacement.setNom(emplacementDetails.getNom());
+        emplacement.setNumero(emplacementDetails.getNumero());
+        emplacement.setVille(emplacementDetails.getVille());
+        emplacement.setType(emplacementDetails.getType());
+        emplacement.setPrix(emplacementDetails.getPrix());
+        emplacement.setDisponible(emplacementDetails.isDisponible());
+        emplacement.setLatitude(emplacementDetails.getLatitude());
+        emplacement.setLongitude(emplacementDetails.getLongitude());
+        emplacement.setDescription(emplacementDetails.getDescription());
+        emplacement.setCapacite(emplacementDetails.getCapacite());
+        emplacement.setSuperficie(emplacementDetails.getSuperficie());
+        emplacement.setEquipements(emplacementDetails.getEquipements());
+        return emplacementRepository.save(emplacement);
     }
 
     // Mettre à jour seulement l'URL de l'image
@@ -75,10 +81,5 @@ public class EmplacementService {
     // Trouver par type
     public List<Emplacement> getEmplacementsByType(String type) {
         return emplacementRepository.findByType(type);
-    }
-
-    // Vérifier si un emplacement existe
-    public boolean existsById(Long id) {
-        return emplacementRepository.existsById(id);
     }
 }

@@ -1,6 +1,9 @@
 package camping.campbackoffice.dtos;
 
+import jakarta.validation.constraints.NotBlank;
+
 public class UpdateStatusRequest {
+    @NotBlank(message = "Le statut est requis")
     private String statut;
     private String notesAdmin;
 

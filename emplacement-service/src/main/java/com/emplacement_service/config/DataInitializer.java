@@ -27,6 +27,12 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        if (adminPassword == null || adminPassword.isBlank() || adminPassword.length() < 8
+                || "admin123".equals(adminPassword)) {
+            throw new IllegalStateException(
+                    "ADMIN_PASSWORD must be set to a strong password (at least 8 characters, " +
+                    "not the default 'admin123').");
+        }
         if (!utilisateurRepository.existsByUsername(adminUsername)) {
             utilisateurRepository.save(new Utilisateur(adminUsername, passwordEncoder.encode(adminPassword), "ADMIN"));
         }

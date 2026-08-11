@@ -13,6 +13,7 @@ export class BackofficeComponent implements OnInit {
   form = {
     nom: '',
     numero: '',
+    ville: '',
     type: 'TENTE',
     prix: 15,
     disponible: true,
@@ -67,6 +68,7 @@ export class BackofficeComponent implements OnInit {
     const payload: Partial<Emplacement> = {
       nom: this.form.nom,
       numero: this.form.numero || undefined,
+      ville: this.form.ville || undefined,
       type: this.form.type,
       prix: Number(this.form.prix),
       disponible: this.form.disponible,
@@ -124,6 +126,7 @@ export class BackofficeComponent implements OnInit {
     this.form = {
       nom: emplacement.nom,
       numero: emplacement.numero || '',
+      ville: emplacement.ville || '',
       type: emplacement.type,
       prix: emplacement.prix,
       disponible: emplacement.disponible,
@@ -169,6 +172,7 @@ export class BackofficeComponent implements OnInit {
     this.form = {
       nom: '',
       numero: '',
+      ville: '',
       type: 'TENTE',
       prix: 15,
       disponible: true,

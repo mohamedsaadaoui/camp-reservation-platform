@@ -16,6 +16,12 @@ public class JwtUtil {
     private final SecretKey key;
 
     public JwtUtil(@Value("${jwt.secret}") String secret) {
+        if (secret == null || secret.isBlank() || secret.length() < 32
+                || secret.equalsIgnoreCase("camp-reservation-platform-jwt-secret-key-change-me-0123456789abcdef")) {
+            throw new IllegalStateException(
+                    "JWT_SECRET must be set to a strong secret of at least 32 characters. " +
+                    "Do not use the example/default secret.");
+        }
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 

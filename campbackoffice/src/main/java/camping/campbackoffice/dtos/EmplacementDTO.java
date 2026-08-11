@@ -1,17 +1,35 @@
 package camping.campbackoffice.dtos;
 
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
 import java.util.List;
 
 public class EmplacementDTO {
     private Long id;
+    @NotBlank
+    @Size(max = 100)
     private String nom;
+    @Size(max = 50)
     private String numero;
+    @Size(max = 100)
+    private String ville;
+    @NotBlank
+    @Size(max = 50)
     private String type;
+    @NotNull
+    @DecimalMin(value = "0.0")
     private Double prix;
     private Boolean disponible;
+    @NotNull
     private Double latitude;
+    @NotNull
     private Double longitude;
+    @Size(max = 1000)
     private String description;
+    @Size(max = 500)
     private String imageUrl;
     private List<String> equipements;
     private Integer capacite;
@@ -23,6 +41,8 @@ public class EmplacementDTO {
     public void setNom(String nom) { this.nom = nom; }
     public String getNumero() { return numero; }
     public void setNumero(String numero) { this.numero = numero; }
+    public String getVille() { return ville; }
+    public void setVille(String ville) { this.ville = ville; }
     public String getType() { return type; }
     public void setType(String type) { this.type = type; }
     public Double getPrix() { return prix; }

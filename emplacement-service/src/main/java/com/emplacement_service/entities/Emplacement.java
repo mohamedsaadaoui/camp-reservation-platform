@@ -1,6 +1,11 @@
 package com.emplacement_service.entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,37 +16,44 @@ public class Emplacement {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank
+    @Size(max = 100)
     @Column(nullable = false)
     private String nom;
 
+    @Size(max = 50)
     private String numero;
 
+    @Size(max = 100)
+    private String ville;
+
+    @NotBlank
+    @Size(max = 50)
     @Column(nullable = false)
     private String type;
 
+    @NotNull
+    @DecimalMin(value = "0.0")
     @Column(nullable = false)
     private double prix;
 
+    @NotNull
     @Column(nullable = false)
     private boolean disponible = true;
 
+    @NotNull
     @Column(nullable = false)
     private double latitude;
 
+    @NotNull
     @Column(nullable = false)
     private double longitude;
 
+    @Size(max = 1000)
     @Column(length = 1000)
     private String description;
 
-    // Option 1: Stocker l'image en BLOB dans la base de données
-    @Lob
-    @Column(name = "image_data", columnDefinition = "LONGBLOB")
-    private byte[] imageData;
-
-    private String imageType;
-
-    // Option 2: Stocker seulement le chemin de l'image (RECOMMANDE)
+    @Size(max = 500)
     @Column(name = "image_url")
     private String imageUrl;
 
@@ -51,9 +63,11 @@ public class Emplacement {
     @Column(name = "equipement")
     private List<String> equipements = new ArrayList<>();
 
+    @Min(1)
     @Column(name = "capacite")
     private Integer capacite = 2;
 
+    @DecimalMin(value = "0.0")
     @Column(name = "superficie")
     private Double superficie;
 
@@ -96,6 +110,14 @@ public class Emplacement {
 
     public void setNumero(String numero) {
         this.numero = numero;
+    }
+
+    public String getVille() {
+        return ville;
+    }
+
+    public void setVille(String ville) {
+        this.ville = ville;
     }
 
     public String getType() {
@@ -146,22 +168,6 @@ public class Emplacement {
         this.description = description;
     }
 
-    public byte[] getImageData() {
-        return imageData;
-    }
-
-    public void setImageData(byte[] imageData) {
-        this.imageData = imageData;
-    }
-
-    public String getImageType() {
-        return imageType;
-    }
-
-    public void setImageType(String imageType) {
-        this.imageType = imageType;
-    }
-
     public String getImageUrl() {
         return imageUrl;
     }
@@ -200,17 +206,6 @@ public class Emplacement {
             this.equipements = new ArrayList<>();
         }
         this.equipements.add(equipement);
-    }
-
-    // Méthode pour obtenir l'URL complète de l'image
-    public String getCompleteImageUrl() {
-        if (this.imageUrl != null && !this.imageUrl.isEmpty()) {
-            return this.imageUrl;
-        } else if (this.imageData != null && this.imageData.length > 0) {
-            // Si vous stockez en BLOB, vous devrez créer un endpoint pour servir l'image
-            return "/api/emplacements/" + this.id + "/image";
-        }
-        return null;
     }
 
     @Override

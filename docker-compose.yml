@@ -59,9 +59,9 @@ services:
       DB_USERNAME: root
       DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
       EUREKA_URI: http://eureka-server:8761/eureka
-      JWT_SECRET: ${JWT_SECRET:-camp-reservation-platform-jwt-secret-key-change-me-0123456789abcdef}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set (random 32+ chars)}
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD must be set (min 8 chars, not 'admin123')}
       UPLOAD_DIR: /app/uploads
     volumes:
       - emplacement-uploads:/app/uploads
@@ -80,7 +80,7 @@ services:
     environment:
       PORT: 8082
       MONGO_URI: mongodb://mongodb:27017/camping
-      JWT_SECRET: ${JWT_SECRET:-camp-reservation-platform-jwt-secret-key-change-me-0123456789abcdef}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set (random 32+ chars)}
       EUREKA_ENABLED: "true"
       EUREKA_HOST: eureka-server
       EUREKA_PORT: 8761
@@ -98,7 +98,7 @@ services:
       - "8063:8063"
     environment:
       EUREKA_URI: http://eureka-server:8761/eureka
-      JWT_SECRET: ${JWT_SECRET:-camp-reservation-platform-jwt-secret-key-change-me-0123456789abcdef}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set (random 32+ chars)}
     depends_on:
       eureka-server:
         condition: service_started

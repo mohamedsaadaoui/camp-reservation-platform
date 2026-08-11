@@ -1,4 +1,4 @@
-package com.emplacement_service.confg;
+package com.emplacement_service.config;
 
 import com.emplacement_service.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;

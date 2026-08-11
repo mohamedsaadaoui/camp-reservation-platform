@@ -4,6 +4,7 @@
     <h1>Camping Tunisie</h1>
   </div>
   <nav class="app-nav">
+    <a routerLink="/cards" routerLinkActive="active">Emplacements</a>
     <a routerLink="/map" routerLinkActive="active">Carte</a>
     <a *ngIf="authService.isAuthenticated && authService.role === 'ADMIN'" routerLink="/backoffice" routerLinkActive="active">Backoffice</a>
     <a *ngIf="!authService.isAuthenticated" routerLink="/login">Connexion</a>

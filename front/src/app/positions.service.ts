@@ -7,6 +7,7 @@ export interface Emplacement {
   id: number;
   nom: string;
   numero?: string;
+  ville?: string;
   type: string;
   prix: number;
   disponible: boolean;

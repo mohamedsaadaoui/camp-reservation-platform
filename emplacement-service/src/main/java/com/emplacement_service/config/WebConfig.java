@@ -1,4 +1,4 @@
-package com.emplacement_service.confg;
+package com.emplacement_service.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;

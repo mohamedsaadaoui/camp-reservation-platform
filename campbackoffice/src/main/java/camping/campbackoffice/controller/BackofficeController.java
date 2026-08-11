@@ -10,6 +10,8 @@ import camping.campbackoffice.dtos.UpdateStatusRequest;
 import camping.campbackoffice.feign.EmplacementServiceClient;
 import camping.campbackoffice.feign.ReservationServiceClient;
 import camping.campbackoffice.service.BackofficeStatisticsService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +23,6 @@ import java.util.stream.Collectors;
 // BackofficeController.java
 @RestController
 @RequestMapping("/api/admin")
-@CrossOrigin(origins = "*")
 @PreAuthorize("hasRole('ADMIN')")
 public class BackofficeController {
 
@@ -74,7 +75,7 @@ public class BackofficeController {
     @PutMapping("/reservations/{id}/status")
     public ResponseEntity<ReservationDTO> updateReservationStatus(
             @PathVariable String id,
-            @RequestBody UpdateStatusRequest request) {
+            @Valid @RequestBody UpdateStatusRequest request) {
 
         return ResponseEntity.ok(reservationClient.updateReservationStatus(id, request));
     }
@@ -91,14 +92,14 @@ public class BackofficeController {
     }
 
     @PostMapping("/emplacements")
-    public ResponseEntity<EmplacementDTO> createEmplacement(@RequestBody EmplacementDTO emplacement) {
-        return ResponseEntity.ok(emplacementClient.createEmplacement(emplacement));
+    public ResponseEntity<EmplacementDTO> createEmplacement(@Valid @RequestBody EmplacementDTO emplacement) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(emplacementClient.createEmplacement(emplacement));
     }
 
     @PutMapping("/emplacements/{id}")
     public ResponseEntity<EmplacementDTO> updateEmplacement(
             @PathVariable Long id,
-            @RequestBody EmplacementDTO emplacement) {
+            @Valid @RequestBody EmplacementDTO emplacement) {
 
         return ResponseEntity.ok(emplacementClient.updateEmplacement(id, emplacement));
     }
@@ -106,7 +107,7 @@ public class BackofficeController {
     @DeleteMapping("/emplacements/{id}")
     public ResponseEntity<Void> deleteEmplacement(@PathVariable Long id) {
         emplacementClient.deleteEmplacement(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/emplacements/{id}/images")

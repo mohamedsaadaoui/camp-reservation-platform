@@ -1,0 +1,48 @@
+<div class="cards-page">
+  <div class="cards-header">
+    <h2>🏕️ Nos emplacements</h2>
+    <p>Découvrez nos campings et choisissez l'emplacement idéal pour votre séjour en Tunisie.</p>
+  </div>
+
+  <div *ngIf="loading" class="cards-loading">
+    <p>Chargement des emplacements...</p>
+  </div>
+
+  <div *ngIf="!loading && emplacements.length === 0" class="cards-empty">
+    <p>Aucun emplacement disponible pour le moment.</p>
+  </div>
+
+  <div class="cards-grid">
+    <div class="camp-card" *ngFor="let emplacement of emplacements">
+      <div class="card-image">
+        <img [src]="getImageUrl(emplacement)" [alt]="emplacement.nom">
+        <div class="card-badges">
+          <span class="badge badge-partner">Partenaire</span>
+          <span class="badge" [class.badge-unavailable]="!emplacement.disponible">
+            {{ emplacement.disponible ? 'Disponible' : 'Indisponible' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <p class="card-location">📍 {{ emplacement.ville || 'Tunisie' }} — {{ emplacement.type }}</p>
+        <h3 class="card-title">{{ emplacement.nom }}</h3>
+
+        <p class="card-description">{{ emplacement.description }}</p>
+
+        <div class="card-price">
+          <span class="price-label">À partir de</span>
+          <span class="price-value">{{ emplacement.prix }} <small>TND / nuit</small></span>
+        </div>
+
+        <div class="card-meta" *ngIf="emplacement.equipements && emplacement.equipements.length">
+          <span *ngFor="let eq of emplacement.equipements.slice(0, 3)" class="meta-tag">{{ eq }}</span>
+        </div>
+
+        <button class="card-explore" (click)="explorer(emplacement)">
+          Explorer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

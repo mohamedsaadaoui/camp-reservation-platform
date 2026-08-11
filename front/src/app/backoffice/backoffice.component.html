@@ -20,11 +20,16 @@
             <input type="text" [(ngModel)]="form.numero" name="numero">
           </div>
           <div>
-            <label>Type *</label>
-            <select [(ngModel)]="form.type" name="type">
-              <option *ngFor="let t of types" [value]="t">{{ t }}</option>
-            </select>
+            <label>Ville</label>
+            <input type="text" [(ngModel)]="form.ville" name="ville" placeholder="Ex: Bizerte">
           </div>
+        </div>
+
+        <div class="form-row">
+          <label>Type *</label>
+          <select [(ngModel)]="form.type" name="type">
+            <option *ngFor="let t of types" [value]="t">{{ t }}</option>
+          </select>
         </div>
 
         <div class="form-row two-cols">
@@ -102,7 +107,7 @@
         <div class="emplacement-info">
           <h4>{{ emplacement.nom }}</h4>
           <p>{{ emplacement.type }} • {{ emplacement.prix }} TND/nuit • {{ emplacement.capacite }} pers.</p>
-          <p class="coordinates">📍 {{ emplacement.latitude.toFixed(4) }}, {{ emplacement.longitude.toFixed(4) }}</p>
+          <p class="coordinates">📍 {{ emplacement.ville || 'Tunisie' }} — {{ emplacement.latitude.toFixed(4) }}, {{ emplacement.longitude.toFixed(4) }}</p>
           <span class="badge" [class.unavailable]="!emplacement.disponible">
             {{ emplacement.disponible ? 'Disponible' : 'Indisponible' }}
           </span>

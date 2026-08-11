@@ -8,10 +8,13 @@ public class Reservation {
     private String emplacementId;
     private String clientNom;
     private String clientEmail;
+    private String clientTelephone;
     private Date dateDebut;
     private Date dateFin;
+    private Integer nombrePersonnes;
     private Double prixTotal;
     private String statut;
+    private String commentaires;
 
     // Constructeurs
     public Reservation() {}
@@ -41,17 +44,26 @@ public class Reservation {
     public String getClientEmail() { return clientEmail; }
     public void setClientEmail(String clientEmail) { this.clientEmail = clientEmail; }
 
+    public String getClientTelephone() { return clientTelephone; }
+    public void setClientTelephone(String clientTelephone) { this.clientTelephone = clientTelephone; }
+
     public Date getDateDebut() { return dateDebut; }
     public void setDateDebut(Date dateDebut) { this.dateDebut = dateDebut; }
 
     public Date getDateFin() { return dateFin; }
     public void setDateFin(Date dateFin) { this.dateFin = dateFin; }
 
+    public Integer getNombrePersonnes() { return nombrePersonnes; }
+    public void setNombrePersonnes(Integer nombrePersonnes) { this.nombrePersonnes = nombrePersonnes; }
+
     public Double getPrixTotal() { return prixTotal; }
     public void setPrixTotal(Double prixTotal) { this.prixTotal = prixTotal; }
 
     public String getStatut() { return statut; }
     public void setStatut(String statut) { this.statut = statut; }
+
+    public String getCommentaires() { return commentaires; }
+    public void setCommentaires(String commentaires) { this.commentaires = commentaires; }
 
     @Override
     public String toString() {

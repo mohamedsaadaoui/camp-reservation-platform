@@ -1,4 +1,5 @@
-import { Component, OnInit, Renderer2 } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { Map, tileLayer, Marker, icon } from 'leaflet';
 import { PositionsService, ImageService, Emplacement, Reservation, StatistiquesEmplacement, Avis } from '../positions.service';
 
@@ -32,7 +33,7 @@ export class MapComponent implements OnInit {
 
   constructor(private positionsService: PositionsService,
               private imageService: ImageService,
-              private renderer: Renderer2) {}
+              private route: ActivatedRoute) {}
 
   ngOnInit() {
     this.initMap();
@@ -50,6 +51,14 @@ export class MapComponent implements OnInit {
     this.positionsService.getPositions().subscribe({
       next: (emplacements: Emplacement[]) => {
         this.createMarkers(emplacements);
+        const requestedId = this.route.snapshot.queryParamMap.get('id');
+        if (requestedId) {
+          const target = emplacements.find((e) => e.id.toString() === requestedId);
+          if (target) {
+            this.map.flyTo([target.latitude, target.longitude], 12);
+            setTimeout(() => this.afficherDetailsEmplacement(target), 600);
+          }
+        }
       },
       error: (error) => {
         console.error('Erreur lors du chargement des emplacements:', error);
@@ -105,40 +114,24 @@ export class MapComponent implements OnInit {
         icon: customIcon
       });
 
-      const popupContent = `
-        <div style="min-width: 250px; text-align:center;">
-          <img src="${this.imageService.getEmplacementImageUrl(emplacement)}"
-               style="width:100%; height:150px; object-fit:cover; border-radius:8px; margin-bottom:10px;"
-               alt="${emplacement.nom}">
-          <h4 style="margin:10px 0; color:#2c3e50;">${emplacement.nom}</h4>
-          <p><strong>Type:</strong> ${emplacement.type}</p>
-          <p><strong>Prix:</strong> ${emplacement.prix} TND/nuit</p>
-          <p><strong>Disponible:</strong> ${emplacement.disponible ? '✅ Oui' : '❌ Non'}</p>
-          <button class="details-btn" style="background:#3498db; color:white; border:none; padding:8px 16px; border-radius:4px; cursor:pointer; margin:5px;">
-            📊 Détails
-          </button>
-          <button class="reserve-btn" style="background:#27ae60; color:white; border:none; padding:8px 16px; border-radius:4px; cursor:pointer; margin:5px;">
-            📅 Réserver
-          </button>
-        </div>
-      `;
+      const popupContent = this.buildPopupContent(emplacement);
 
       marker.bindPopup(popupContent);
 
       marker.on('popupopen', () => {
-        const popupElement = document.querySelector('.leaflet-popup-content');
+        const popupElement = popupContent.parentElement;
         if (popupElement) {
-          const detailsBtn = popupElement.querySelector('.details-btn');
-          const reserveBtn = popupElement.querySelector('.reserve-btn');
-          
+          const detailsBtn = popupContent.querySelector('.details-btn');
+          const reserveBtn = popupContent.querySelector('.reserve-btn');
+
           if (detailsBtn) {
-            this.renderer.listen(detailsBtn, 'click', () => {
+            detailsBtn.addEventListener('click', () => {
               this.afficherDetailsEmplacement(emplacement);
             });
           }
-          
+
           if (reserveBtn) {
-            this.renderer.listen(reserveBtn, 'click', () => {
+            reserveBtn.addEventListener('click', () => {
               this.preparerReservation(emplacement);
             });
           }
@@ -149,6 +142,67 @@ export class MapComponent implements OnInit {
     });
 
     this.markers.forEach(marker => marker.addTo(this.map));
+  }
+
+  // Construit le popup avec des nœuds DOM (textContent) pour éviter toute
+  // injection XSS via les données de l'emplacement (nom, type, ...).
+  private buildPopupContent(emplacement: Emplacement): HTMLDivElement {
+    const container = document.createElement('div');
+    container.style.minWidth = '250px';
+    container.style.textAlign = 'center';
+
+    const image = document.createElement('img');
+    image.src = this.imageService.getEmplacementImageUrl(emplacement);
+    image.alt = emplacement.nom;
+    image.style.width = '100%';
+    image.style.height = '150px';
+    image.style.objectFit = 'cover';
+    image.style.borderRadius = '8px';
+    image.style.marginBottom = '10px';
+    container.appendChild(image);
+
+    const title = document.createElement('h4');
+    title.textContent = emplacement.nom;
+    title.style.margin = '10px 0';
+    title.style.color = '#2c3e50';
+    container.appendChild(title);
+
+    container.appendChild(this.popupLine('Type', emplacement.type));
+    container.appendChild(this.popupLine('Prix', `${emplacement.prix} TND/nuit`));
+    container.appendChild(this.popupLine('Disponible', emplacement.disponible ? '✅ Oui' : '❌ Non'));
+
+    const detailsBtn = document.createElement('button');
+    detailsBtn.className = 'details-btn';
+    detailsBtn.textContent = '📊 Détails';
+    this.stylePopupButton(detailsBtn, '#3498db');
+    container.appendChild(detailsBtn);
+
+    const reserveBtn = document.createElement('button');
+    reserveBtn.className = 'reserve-btn';
+    reserveBtn.textContent = '📅 Réserver';
+    this.stylePopupButton(reserveBtn, '#27ae60');
+    container.appendChild(reserveBtn);
+
+    return container;
+  }
+
+  private popupLine(label: string, value: string): HTMLParagraphElement {
+    const line = document.createElement('p');
+    const strong = document.createElement('strong');
+    strong.textContent = `${label}: `;
+    line.appendChild(strong);
+    line.appendChild(document.createTextNode(value));
+    return line;
+  }
+
+  private stylePopupButton(button: HTMLButtonElement, color: string): void {
+    button.style.background = color;
+    button.style.color = 'white';
+    button.style.border = 'none';
+    button.style.padding = '8px 16px';
+    button.style.borderRadius = '4px';
+    button.style.cursor = 'pointer';
+    button.style.margin = '5px';
   }
 
   private getMarkerIcon(type: string): string {
