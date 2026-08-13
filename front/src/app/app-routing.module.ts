@@ -4,6 +4,7 @@ import { MapComponent } from './map/map.component';
 import { LoginComponent } from './login/login.component';
 import { BackofficeComponent } from './backoffice/backoffice.component';
 import { CardsComponent } from './cards/cards.component';
+import { DashboardComponent } from './dashboard/dashboard.component';
 import { AdminGuard } from './admin.guard';
 
 const routes: Routes = [
@@ -12,6 +13,7 @@ const routes: Routes = [
   { path: 'map', component: MapComponent },
 
   { path: 'login', component: LoginComponent },
+  { path: 'dashboard', component: DashboardComponent, canActivate: [AdminGuard] },
   { path: 'backoffice', component: BackofficeComponent, canActivate: [AdminGuard] },
   { path: '**', redirectTo: '/cards' }
 ];

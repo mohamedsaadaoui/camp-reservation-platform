@@ -1,0 +1,74 @@
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <h2>📊 Tableau de bord</h2>
+    <a routerLink="/backoffice" class="btn-secondary">🛠️ Gestion des emplacements</a>
+  </div>
+
+  <div *ngIf="error" class="message error">{{ error }}</div>
+  <div *ngIf="loading" class="loading">Chargement des statistiques…</div>
+
+  <div class="kpi-grid" *ngIf="stats">
+    <div class="kpi-card">
+      <span class="kpi-icon">🏕️</span>
+      <span class="kpi-value">{{ stats.totalEmplacements }}</span>
+      <span class="kpi-label">Emplacements</span>
+      <span class="kpi-sub">{{ stats.emplacementsDisponibles }} disponibles</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-icon">📅</span>
+      <span class="kpi-value">{{ stats.totalReservations }}</span>
+      <span class="kpi-label">Réservations</span>
+      <span class="kpi-sub">{{ stats.reservationsEnAttente }} en attente</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-icon">💰</span>
+      <span class="kpi-value">{{ stats.revenueTotal | number:'1.0-0' }} TND</span>
+      <span class="kpi-label">Revenu total</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-icon">📈</span>
+      <span class="kpi-value">{{ stats.tauxOccupation | number:'1.0-1' }}%</span>
+      <span class="kpi-label">Taux d'occupation</span>
+      <span class="kpi-sub">sur 30 jours</span>
+    </div>
+  </div>
+
+  <div class="chart-card wide">
+    <div class="chart-header">
+      <h3>Revenus confirmés</h3>
+      <div class="period-toggle">
+        <button [class.active]="period === 'daily'" (click)="setPeriod('daily')">Journalier</button>
+        <button [class.active]="period === 'weekly'" (click)="setPeriod('weekly')">Hebdomadaire</button>
+        <button [class.active]="period === 'monthly'" (click)="setPeriod('monthly')">Mensuel</button>
+      </div>
+    </div>
+    <div class="chart-canvas">
+      <canvas baseChart
+              [data]="revenueChartData"
+              [options]="revenueChartOptions"></canvas>
+    </div>
+  </div>
+
+  <div class="chart-row">
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3>Statut des réservations</h3>
+      </div>
+      <div class="chart-canvas">
+        <canvas baseChart
+                [data]="statusChartData"
+                [options]="statusChartOptions"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3>Top emplacements</h3>
+      </div>
+      <div class="chart-canvas">
+        <canvas baseChart
+                [data]="topChartData"
+                [options]="topChartOptions"></canvas>
+      </div>
+    </div>
+  </div>
+</div>

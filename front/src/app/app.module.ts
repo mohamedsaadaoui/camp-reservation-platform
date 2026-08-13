@@ -13,7 +13,9 @@ import { MapComponent } from './map/map.component';
 import { LoginComponent } from './login/login.component';
 import { BackofficeComponent } from './backoffice/backoffice.component';
 import { CardsComponent } from './cards/cards.component';
+import { DashboardComponent } from './dashboard/dashboard.component';
 import { AuthInterceptor } from './auth.interceptor';
+import { NgChartsModule } from 'ng2-charts';
 
 @NgModule({
   declarations: [
@@ -21,7 +23,8 @@ import { AuthInterceptor } from './auth.interceptor';
     MapComponent,
     LoginComponent,
     BackofficeComponent,
-    CardsComponent
+    CardsComponent,
+    DashboardComponent
   ],
   imports: [
     BrowserModule,
@@ -32,7 +35,8 @@ import { AuthInterceptor } from './auth.interceptor';
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    BrowserAnimationsModule
+    BrowserAnimationsModule,
+    NgChartsModule
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
